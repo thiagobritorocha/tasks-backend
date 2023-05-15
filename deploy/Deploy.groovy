@@ -1,5 +1,4 @@
 #!groovy
-@Library('slack-helper')
 import java.lang.Object
 
 node("java14") {
