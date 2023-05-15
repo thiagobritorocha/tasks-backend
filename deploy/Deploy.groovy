@@ -1,10 +1,11 @@
 #!groovy
-import java.lang.Object
-
-node("java14") {
-
-    checkout scm
-    def base = load "./deploy/_Base.groovy"
-
-    base.startPipeline()
+pipeline {
+    agent any
+    stages {
+        stage any
+        stage("One") {
+            def base = load "./deploy/_Base.groovy"
+            base.startPipeline()
+        }
+    }
 }
