@@ -2,9 +2,9 @@
 pipeline {
     agent any
     stages {
-        stage("One") {
+        stage("build") {
             steps {
-                script {
+                withGroovy(tool:'4.0.8') {
                     def gradleProperties = readProperties file: 'gradle.properties'
                     def currentVersion = gradleProperties['version']
                     def versionParts = currentVersion.split('\\.')
@@ -16,6 +16,16 @@ pipeline {
                     gradleProperties['version'] = newVersion
                     writeProperties file: 'gradle.properties', properties: gradleProperties
                 }
+            }
+        }
+        stage("test") {
+            steps {
+                echo 'test'
+            }
+        }
+        stage("deploy") {
+            steps {
+                echo 'deploy'
             }
         }
     }
