@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage("build") {
             steps {
-                step {
+                script {
                     withGroovy(tool: '4.0.8') {
                         def gradleProperties = readProperties file: 'gradle.properties'
                         def currentVersion = gradleProperties['version']
