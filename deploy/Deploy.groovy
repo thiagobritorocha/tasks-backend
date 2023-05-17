@@ -1,43 +1,41 @@
-#!/usr/bin/env groovy
+@Library('pipeline-utility-steps') _
 
-node {
-    stage('Build') {
-        steps {
-            script {
-                def propertiesFile = readFile 'gradle.properties'
-                def versionProperty = findProperty(propertiesFile, 'version')
+pipeline {
+    agent any
 
-                // Incrementa a versão em 1
-                def incrementedVersion = incrementVersion(versionProperty)
-
-                // Atualiza a propriedade no arquivo gradle.properties
-                propertiesFile = updateProperty(propertiesFile, 'version', incrementedVersion)
-
-                // Salva o arquivo atualizado
-                writeFile file: 'gradle.properties', text: propertiesFile
+    stages {
+        stage('Increment Version') {
+            steps {
+                script {
+                    def gradleProperties = readProperties file: 'gradle.properties'
+                    def currentVersion = gradleProperties['versão']
+                    def versionParts = currentVersion.split('\\.')
+                    def majorVersion = Integer.parseInt(versionParts[0])
+                    def minorVersion = Integer.parseInt(versionParts[1])
+                    def patchVersion = Integer.parseInt(versionParts[2])
+                    patchVersion++
+                    def newVersion = "${majorVersion}.${minorVersion}.${patchVersion}"
+                    gradleProperties['versão'] = newVersion
+                    writeProperties file: 'gradle.properties', properties: gradleProperties
+                }
             }
         }
+
+        // Outros estágios do pipeline...
+
+        stage('Build') {
+            steps {
+                // Etapas de construção do seu projeto
+            }
+        }
+
+        // Mais estágios do pipeline...
+
     }
-}
 
-def findProperty(fileContent, propertyName) {
-    def properties = new Properties()
-    properties.load(new ByteArrayInputStream(fileContent.bytes))
-    properties.getProperty(propertyName)
-}
-
-def incrementVersion(version) {
-    def versionParts = version.split('\\.')
-    def lastPart = versionParts[-1].toInteger()
-    versionParts[-1] = (lastPart + 1).toString()
-    versionParts.join('.')
-}
-
-def updateProperty(fileContent, propertyName, newValue) {
-    def properties = new Properties()
-    properties.load(new ByteArrayInputStream(fileContent.bytes))
-    properties.setProperty(propertyName, newValue)
-    def outputStream = new ByteArrayOutputStream()
-    properties.store(outputStream, null)
-    outputStream.toString()
+    post {
+        always {
+            cleanWs() // Limpa o workspace após a execução do pipeline
+        }
+    }
 }
